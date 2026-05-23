@@ -28,8 +28,8 @@ MediaMTX (run once before this script):
   docker run --rm -it --network=host bluenviron/mediamtx:latest
 
 Consume the stream with e.g.:
-  ffplay rtsp://localhost:8554/drone
-  vlc rtsp://localhost:8554/drone
+  ffplay rtsp://localhost:8554/aurelius
+  vlc rtsp://localhost:8554/aurelius
 """
 
 import argparse
@@ -510,8 +510,8 @@ def parse_args():
         help="Overlay the original frame as a PiP in the bottom-right corner.",
     )
     parser.add_argument(
-        "--rtsp-url", default="rtsp://localhost:8554/drone",
-        help="RTSP publish URL (default: rtsp://localhost:8554/drone).",
+        "--rtsp-url", default="rtsp://localhost:8554/aurelius",
+        help="RTSP publish URL (default: rtsp://localhost:8554/aurelius).",
     )
     return parser.parse_args()
 
