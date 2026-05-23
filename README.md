@@ -45,12 +45,26 @@ kill <PID>
 
 ## Ground Station (Receiver + Inference + RTSP)
 
-### 1 — Start MediaMTX (RTSP server)
+### 1a — Start Docker MediaMTX (RTSP server)
 Run this once before the ground station script. The RTSP stream will be
 available as soon as this container is up, even before the drone connects.
 
 ```bash
 docker run --rm -it --network=host bluenviron/mediamtx:latest
+```
+
+### 1b — Start Local MediaMTX (RTSP server)
+Download and run MediaMTX locally without docker:
+
+```bash
+# Linux x86_64
+wget https://github.com/bluenviron/mediamtx/releases/download/v1.18.1/mediamtx_v1.18.1_linux_amd64.tar.gz
+
+# Extract archive
+tar xzf mediamtx_*.tar.gz
+
+# Start MediaMTX
+./mediamtx
 ```
 
 ### 2 — Start the ground station
