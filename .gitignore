@@ -1,0 +1,19 @@
+# Model weights
+*.pth
+
+# TensorRT engines
+*.trt
+
+# ONNX external data
+*.onnx.data
+
+# Archives
+*.zip
+
+# COLMAP binary files
+*.bin
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
