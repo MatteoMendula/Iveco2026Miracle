@@ -1,0 +1,539 @@
+Default dataset paths:
+  UAVScenes root: ../../datasets/uavscenes
+  UAVScenes interval: interval1
+  UAVScenes Terra root: ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh
+  COLMAP root: ../../datasets/asym_col
+
+Default checkpoint paths used below:
+  Seg teacher:
+    models/best_seg_teacher.pth
+
+  Depth teacher:
+    models/best_depth_teacher.pth
+
+  Seg split 64-channel:
+    models/best_seg_split.pth
+
+  Depth split 64-channel:
+    models/best_depth_split_stage3_final_keep.pth
+
+64-channel split config:
+  --custom-spatial-ch 64
+  --custom-token-dim 128
+  --custom-patch-size 4
+  --custom-keep-ratio 0.25
+  --custom-vit-depth-dec 4
+  --custom-vit-heads 8
+
+Depth convention:
+  --prediction-units normalized
+  --max-depth-meters 200
+  --depth-mid-channels 96
+
+
+============================================================
+1. SEGMENTATION TEACHER
+============================================================
+
+1A. Seg teacher on UAVScenes
+----------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --seg-teacher-ckpt runs/seg_teacher_weighted/best_seg_teacher.pth \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_seg_teacher_uavscenes
+
+
+1B. Seg teacher on raw image folder
+-----------------------------------
+python3 visualize_models.py \
+  --input-dir path/to/rgb_images \
+  --seg-teacher-ckpt runs/seg_teacher_weighted/best_seg_teacher.pth \
+  --folder-image-size 512 \
+  --num-samples 12 \
+  --out-dir viz/handoff_seg_teacher_folder
+
+
+Notes:
+  Segmentation labels only exist for UAVScenes in the current project setup.
+  Do not use COLMAP as a segmentation dataset unless a COLMAP segmentation
+  dataset/loader is added later.
+
+
+============================================================
+2. DEPTH TEACHER
+============================================================
+
+2A. Depth teacher on UAVScenes Terra
+------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_teacher_uavscenes
+
+
+2B. Depth teacher on COLMAP
+---------------------------
+python3 visualize_models.py \
+  --dataset-mode colmap \
+  --colmap-root ../../datasets/asym_col \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_teacher_colmap
+
+
+2C. Depth teacher on mixed UAVScenes + COLMAP
+---------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode mixed \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --colmap-root ../../datasets/asym_col \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_teacher_mixed
+
+
+2D. Depth teacher on raw image folder
+-------------------------------------
+python3 visualize_models.py \
+  --input-dir path/to/rgb_images \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --folder-image-size 512 \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_teacher_folder
+
+
+============================================================
+3. SEGMENTATION SPLIT 64-CHANNEL
+============================================================
+
+3A. Seg split on UAVScenes, ViT active only
+-------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants vit \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_seg_split_uavscenes_vit
+
+
+3B. Seg split on UAVScenes, ViT disabled / clean split only
+-----------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants no_vit \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_seg_split_uavscenes_no_vit
+
+
+3C. Seg split on UAVScenes, both ViT and no-ViT outputs
+-------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_seg_split_uavscenes_both
+
+
+3D. Seg split on raw image folder, both ViT and no-ViT outputs
+--------------------------------------------------------------
+python3 visualize_models.py \
+  --input-dir path/to/rgb_images \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --folder-image-size 512 \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --num-samples 12 \
+  --out-dir viz/handoff_seg_split_folder_both
+
+
+Notes:
+  Seg split dataset visualization should use UAVScenes because that is where
+  segmentation labels exist. Folder mode works for inference-style visualization
+  without labels.
+
+
+============================================================
+4. DEPTH SPLIT 64-CHANNEL
+============================================================
+
+4A. Depth split on UAVScenes, ViT active only
+---------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants vit \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_uavscenes_vit
+
+
+4B. Depth split on UAVScenes, ViT disabled / clean split only
+-------------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants no_vit \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_uavscenes_no_vit
+
+
+4C. Depth split on UAVScenes, both ViT and no-ViT outputs
+---------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_uavscenes_both
+
+
+4D. Depth split on COLMAP, ViT active only
+------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode colmap \
+  --colmap-root ../../datasets/asym_col \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants vit \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_colmap_vit
+
+
+4E. Depth split on COLMAP, ViT disabled / clean split only
+----------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode colmap \
+  --colmap-root ../../datasets/asym_col \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants no_vit \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_colmap_no_vit
+
+
+4F. Depth split on COLMAP, both ViT and no-ViT outputs
+------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode colmap \
+  --colmap-root ../../datasets/asym_col \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_colmap_both
+
+
+4G. Depth split on mixed UAVScenes + COLMAP, both ViT and no-ViT outputs
+------------------------------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode mixed \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --colmap-root ../../datasets/asym_col \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_mixed_both
+
+
+4H. Depth split on raw image folder, both ViT and no-ViT outputs
+----------------------------------------------------------------
+python3 visualize_models.py \
+  --input-dir path/to/rgb_images \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --folder-image-size 512 \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --num-samples 12 \
+  --out-dir viz/handoff_depth_split_folder_both
+
+
+============================================================
+5. ALL MODELS TOGETHER
+============================================================
+
+5A. All four models on UAVScenes
+--------------------------------
+python3 visualize_models.py \
+  --dataset-mode uavscenes \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --seg-teacher-ckpt runs/seg_teacher_weighted/best_seg_teacher.pth \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_all_models_uavscenes
+
+
+5B. All applicable models on mixed UAVScenes + COLMAP
+-----------------------------------------------------
+python3 visualize_models.py \
+  --dataset-mode mixed \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --colmap-root ../../datasets/asym_col \
+  --seg-teacher-ckpt runs/seg_teacher_weighted/best_seg_teacher.pth \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 12 \
+  --out-dir viz/handoff_all_models_mixed
+
+
+5C. All four models on raw image folder
+---------------------------------------
+python3 visualize_models.py \
+  --input-dir path/to/rgb_images \
+  --seg-teacher-ckpt runs/seg_teacher_weighted/best_seg_teacher.pth \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --folder-image-size 512 \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --num-samples 12 \
+  --out-dir viz/handoff_all_models_folder
+
+
+============================================================
+6. QUICK SMOKE TESTS
+============================================================
+
+6A. Tiny all-model folder smoke test
+------------------------------------
+python3 visualize_models.py \
+  --input-dir path/to/rgb_images \
+  --seg-teacher-ckpt runs/seg_teacher_weighted/best_seg_teacher.pth \
+  --depth-teacher-ckpt runs/depth_teacher_uavscenes_terra_200m/best_depth_teacher.pth \
+  --seg-split-ckpt runs/seg_split_depthstyle_64ch_vit/best_seg_split.pth \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --folder-image-size 512 \
+  --split-variants both \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --depth-mid-channels 96 \
+  --num-samples 2 \
+  --out-dir viz/smoke_all_models_folder
+
+
+6B. Tiny depth-split mixed smoke test
+-------------------------------------
+python3 visualize_models.py \
+  --dataset-mode mixed \
+  --data-root ../../datasets/uavscenes \
+  --uav-intervals interval1 \
+  --uav-depth-source terra \
+  --uav-terra-root ../../datasets/uavscenes/terra_3dmap_pointcloud_mesh \
+  --colmap-root ../../datasets/asym_col \
+  --depth-split-ckpt runs/depth_split_3stage_deeper_vit_64ch_resume_ep023/best_depth_split_stage3_final_keep.pth \
+  --custom-spatial-ch 64 \
+  --custom-token-dim 128 \
+  --custom-patch-size 4 \
+  --custom-keep-ratio 0.25 \
+  --custom-vit-depth-dec 4 \
+  --custom-vit-heads 8 \
+  --split-variants both \
+  --prediction-units normalized \
+  --max-depth-meters 200 \
+  --colmap-max-depth 200 \
+  --depth-mid-channels 96 \
+  --workers 0 \
+  --num-samples 2 \
+  --out-dir viz/smoke_depth_split_mixed
