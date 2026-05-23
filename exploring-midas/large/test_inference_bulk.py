@@ -21,7 +21,6 @@ from unified_seg_teacher import UnifiedSegmentationTeacher
 
 # --- Configuration ---
 MODEL_TYPE = "DPT_Large"
-DET_CKPT = "/home/albus/Documents/AureliusIndustries/demoNovember2025/centurion-aurelius-industries/ai-model/checkpoints/best_det_teacher.pth"
 DEPTH_CKPT = "/home/albus/Documents/AureliusIndustries/demoNovember2025/centurion-aurelius-industries/ai-model/checkpoints/best_depth_teacher.pth"
 SEG_CKPT = "/home/albus/Documents/AureliusIndustries/demoNovember2025/centurion-aurelius-industries/ai-model/checkpoints/best_seg_teacher.pth"
 
