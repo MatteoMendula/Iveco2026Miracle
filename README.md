@@ -127,6 +127,7 @@ keeps the stream valid until the drone connects.
 
 | Action | Command |
 |---|---|
+| Start sender (setting save + max fps + host) | `nohup python -u sender.py --max-fps-capture 5 --host 100.100.100.100 --save-dir ./flight_001 > flight_001.log 2>&1 &` |
 | Start sender (with save) | `nohup python -u sender.py --save-dir ./flight_001 > flight_001.log 2>&1 &` |
 | Start sender (no save) | `nohup python -u sender.py > flight_001.log 2>&1 &` |
 | Watch sender log | `tail -f flight_001.log` |
