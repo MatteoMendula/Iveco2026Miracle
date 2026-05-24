@@ -156,6 +156,20 @@ class TelemetryLogger(threading.Thread):
         self.packet_count = 0
         self.good_count = 0
         self.error_count = 0
+        # MTData2 often arrives as partial packets: e.g. one packet may contain
+        # GPS/nav fields while another contains IMU/orientation fields.  Keep a
+        # rolling decoded state so telemetry.jsonl/state_latest.json contain a
+        # fused latest sample instead of writing nulls for fields absent from the
+        # current packet. raw_packets.jsonl still preserves each packet exactly.
+        self.latest_decoded: Dict[str, Any] = {}
+
+    def _merge_decoded_packet(self, decoded: Dict[str, Any]) -> Dict[str, Any]:
+        for k, v in decoded.items():
+            if k == "items" or k.startswith("raw_") or k.startswith("parse_warning"):
+                continue
+            if v is not None:
+                self.latest_decoded[k] = v
+        return dict(self.latest_decoded)
 
     def update_state_file(self, sample: MtiSample) -> None:
         tmp = self.state_json.with_suffix(".tmp")
@@ -166,8 +180,8 @@ class TelemetryLogger(threading.Thread):
         os.replace(tmp, self.state_json)
 
     @staticmethod
-    def _sample_from_packet(pkt) -> MtiSample:
-        d = pkt.decoded
+    def _sample_from_packet(pkt, decoded_state: Optional[Dict[str, Any]] = None) -> MtiSample:
+        d = decoded_state if decoded_state is not None else pkt.decoded
         return MtiSample(
             t_unix_ns=unix_time_ns(),
             t_monotonic_ns=monotonic_time_ns(),
@@ -227,7 +241,8 @@ class TelemetryLogger(threading.Thread):
                             "decoded": compact_dict(pkt.decoded),
                         }
                     )
-                    sample = self._sample_from_packet(pkt)
+                    decoded_state = self._merge_decoded_packet(pkt.decoded)
+                    sample = self._sample_from_packet(pkt, decoded_state)
                     self.good_count += 1
                     self.latest_sample = sample
                     self.out.write(asdict(sample))

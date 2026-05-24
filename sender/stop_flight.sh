@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-DATA_ROOT="/data"
+DATA_ROOT="/home/nvidia/Documents/data-flights"
 
 if [[ $# -ge 1 ]]; then
     RUN_NAME="$1"

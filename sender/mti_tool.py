@@ -82,6 +82,14 @@ def _read_be_u32(b: bytes) -> int:
     return int.from_bytes(b, "big", signed=False)
 
 
+def _read_be_f32(b: bytes) -> float:
+    return struct.unpack(">f", b)[0]
+
+
+def _read_be_f32x2(b: bytes) -> Tuple[float, float]:
+    return struct.unpack(">2f", b)
+
+
 def _read_be_f32x3(b: bytes) -> Tuple[float, float, float]:
     return struct.unpack(">3f", b)
 
@@ -168,6 +176,16 @@ def decode_mtdata2_item(data_id: int, payload: bytes) -> Dict[str, Any]:
             "yaw_deg": yaw_deg,
         }
 
+    if data_id == 0x2030 and len(payload) == 12:
+        # Orientation Data: Euler angles as float32 degrees: roll, pitch, yaw.
+        # This is the profile emitted by the packet we decoded with 0x2030.
+        roll_deg, pitch_deg, yaw_deg = _read_be_f32x3(payload)
+        return {
+            "roll_deg": roll_deg,
+            "pitch_deg": pitch_deg,
+            "yaw_deg": yaw_deg,
+        }
+
     if data_id == 0x4020 and len(payload) == 12:
         ax, ay, az = _read_be_f32x3(payload)
         return {"accel_x_mps2": ax, "accel_y_mps2": ay, "accel_z_mps2": az}
@@ -183,13 +201,28 @@ def decode_mtdata2_item(data_id: int, payload: bytes) -> Dict[str, Any]:
     if data_id == 0xE020 and len(payload) == 4:
         return decode_status_word(_read_be_u32(payload))
 
+    if data_id == 0x5040 and len(payload) == 8:
+        # Position: latitude/longitude as float32 degrees.
+        # This is the profile emitted by the packet we decoded with 0x5040.
+        lat, lon = _read_be_f32x2(payload)
+        return {"lat_deg": lat, "lon_deg": lon}
+
     if data_id == 0x5042 and len(payload) == 12:
         lat = _read_xsens_fp1632_6(payload[0:6])
         lon = _read_xsens_fp1632_6(payload[6:12])
         return {"lat_deg": lat, "lon_deg": lon}
 
+    if data_id == 0x5020 and len(payload) == 4:
+        # Altitude as float32 meters.
+        return {"alt_ellipsoid_m": _read_be_f32(payload)}
+
     if data_id == 0x5022 and len(payload) == 6:
         return {"alt_ellipsoid_m": _read_xsens_fp1632_6(payload[0:6])}
+
+    if data_id == 0xD010 and len(payload) == 12:
+        # Velocity as float32 m/s.
+        vx, vy, vz = _read_be_f32x3(payload)
+        return {"vel_x_mps": vx, "vel_y_mps": vy, "vel_z_mps": vz}
 
     if data_id == 0xD012 and len(payload) == 18:
         vx = _read_xsens_fp1632_6(payload[0:6])

@@ -38,6 +38,7 @@ import subprocess
 import threading
 import time
 from pathlib import Path
+import json
 
 import cv2
 import numpy as np
@@ -357,7 +358,13 @@ def receiver_thread(frame_queue: FrameQueue, stop_event: threading.Event):
                     print("\n[Receiver] Drone disconnected — will re-listen.")
                     break
 
-                if obj.get("msg_type") == "camera_frame":
+                msg_type = obj.get("msg_type")
+
+                if msg_type == "mti_sample":
+                    print("\n[MTI]")
+                    print(json.dumps(obj, indent=2))
+
+                if msg_type == "camera_frame":
                     byte_data = obj["image_bytes"]
                     np_arr    = np.frombuffer(byte_data, np.uint8)
                     frame     = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)

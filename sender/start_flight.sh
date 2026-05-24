@@ -17,14 +17,11 @@
 set -euo pipefail
 
 # ── Edit these to match your setup ────────────────────────────────────────────
-DATA_ROOT="/data"
-GROUND_STATION_HOST="100.100.100.100"
+DATA_ROOT="/home/nvidia/Documents/data-flights"
+GROUND_STATION_HOST="192.168.168.19"
 MTI_PORT="/dev/ttyUSB0"
 MTI_BAUD=115200
-CAMERA_DEVICE="/dev/video0"
-CAMERA_FPS=10
 MAX_FPS_CAPTURE=5
-JPEG_QUALITY=92
 # ──────────────────────────────────────────────────────────────────────────────
 
 RUN_NAME="${1:-flight_$(date +%Y%m%d_%H%M%S)}"
@@ -45,9 +42,7 @@ nohup python -u collect_payload_supervisor.py \
     --run-name    "${RUN_NAME}"            \
     --mti-port    "${MTI_PORT}"            \
     --mti-baud    "${MTI_BAUD}"            \
-    --camera-device "${CAMERA_DEVICE}"     \
-    --camera-fps  "${CAMERA_FPS}"          \
-    --jpeg-quality "${JPEG_QUALITY}"       \
+    --disable-camera                       \
     > "${LOGS_DIR}/supervisor.out" 2>&1 &
 
 SUPERVISOR_PID=$!
