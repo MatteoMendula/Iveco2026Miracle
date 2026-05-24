@@ -431,7 +431,7 @@ def inference_thread(frame_queue, result_queue, depth_model, seg_model,
         _push_to_result(result_queue, composed)
 
         avg_ms = sum(inf_times[-30:]) / min(len(inf_times), 30)
-        print(f"\r[Inference] {elapsed_ms:5.1f} ms  (avg {avg_ms:5.1f} ms)",
+        print(f"[Inference] {elapsed_ms:5.1f} ms  (avg {avg_ms:5.1f} ms)",
               end="", flush=True)
 
     print("\n[Inference] Stopped.")
